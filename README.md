@@ -89,9 +89,6 @@ void loop() {
     // If the user just closed their index finger, set the LED to blue
     if (glove.didIndexClose()) {glove.setLED(0, 0, 255)}
 
-    // If the user just opened their index finger, set the LED to red
-    else if (glove.didIndexOpen()) {glove.setLED(255, 0, 0)}
-
     // If the user is waving, set the LED to green
     else if (glove.getXRot() >= 5 || glove.getXRot() <= -5) {glove.setLED(0, 255, 0)}
 
@@ -101,8 +98,7 @@ void loop() {
 List of main functions:
 
 ```c++
-// Get the scaled acceleration/rotation value in a direction (x/y/z)
-// 1 is a very tiny move, 10 is a massive gesture
+// Get the acceleration/rotation value in a direction (x/y/z), scaled from 1 -> 10
 int accX = glove.getXAccel();
 int rotX = glove.getXRot();
 
@@ -113,9 +109,7 @@ bool isIndexOpen = glove.getIndexOpen()
 bool indexWasOpened = glove.didIndexOpen()
 bool indexWasClosed = glove.didIndexClose()
 
-// Was a certain finger gesture completed?
-// This example checks for two index taps then a ring tap
-// 0 is thumb tap, 1 is index tap ... 4 is little tap
+// Was a certain finger gesture just completed? (see gesture section)
 bool gestureCompleted = glove.didGesture([1, 1, 3])
 
 // Change the LED colour (RGB values from 0 -> 255)
@@ -154,6 +148,28 @@ glove.setLEDConnected(true);
 ### Debugging using ggmonitor
 
 ggmonitor is a cross-platform Python GUI tool allowing the calibration and testing of a gyro glove
+
+There are some dependencies, however most should already be installed if python is:
+
+- python3
+- pyserial
+- tkinter
+- PIL plus the tkinter imagetk package
+- numpy
+- matplotlib
+
+On Ubuntu these can be installed with apt:
+
+```sh
+sudo apt update
+sudo apt install python3 python3-matplotlib python3-numpy python3-serial python3-tk python3-pil python3-pil.imagetk
+```
+
+On Windows these can be installed with pip after installing python3:
+
+```sh
+pip3 install --upgrade matplotlib numpy serial tkinter pil
+```
 
 Ensure gyroglovelib is initialised correctly and that the following line is in the setup code of the Arduino:
 
