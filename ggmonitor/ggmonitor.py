@@ -11,14 +11,20 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
-
 matplotlib.use("TkAgg")
+
+# For comms with the Arduino
+import serial
+import time
+import io
+
+import platform
 
 connected = False
 
 accelData = [[], [], []]
 gyroData = [[], [], []]
-buttonData = [0, 0, 0, 0, 0]
+buttonData = [0, 0, 1, 1, 0]
 oldButtonData = [1, 1, 1, 1, 1]
 ledColour = (255, 0, 0)
 oldLedColour = (255, 255, 255)
@@ -28,57 +34,141 @@ updateString = "0,0,0,0,0,0,0,0,0,0,0"
 relX = 0
 relY = -45
 
-def update():
+maxPoints = 1000
 
-    global oldButtonData
-    global oldLedColour
+port = None
+sio = None
 
-    handChanged = False
-    for i in range(len(buttonData)):
-        if buttonData[i] != oldButtonData[i]:
-            handChanged = True
-            break
+count = 0
 
-    for i in range(len(ledColour)):
-        if ledColour[i] != oldLedColour[i]:
-            handChanged = True
-            break
+osName = "linux"
 
-    if handChanged:
+def attempConnection(portName):
 
-        # Create base hand image
-        newHand = Image.new('RGBA', (570, 700))
-        newHand.paste(palm, (100+relX, 280+relY), palm)
+    global port
+    global sio
 
-        # Is each finger closed or open?
-        if buttonData[1] == 0: newHand.paste(indexOpen, (318+relX, 82+relY), indexOpen)
-        else: newHand.paste(indexClosed, (309+relX, 280+relY), indexClosed)
-        if buttonData[2] == 0: newHand.paste(middleOpen, (248+relX, 47+relY), middleOpen)
-        else: newHand.paste(middleClosed, (246+relX, 265+relY), middleClosed)
-        if buttonData[3] == 0: newHand.paste(ringOpen, (168+relX, 77+relY), ringOpen)
-        else: newHand.paste(ringClosed, (171+relX, 267+relY), ringClosed)
-        if buttonData[4] == 0: newHand.paste(littleOpen, (91+relX, 148+relY), littleOpen)
-        else: newHand.paste(littleClosed, (100+relX, 294+relY), littleClosed)
-        if buttonData[0] == 0: newHand.paste(thumbOpen, (386+relX, 318+relY), thumbOpen)
-        else: newHand.paste(thumbClosed, (273+relX, 349+relY), thumbClosed)
+    try:
+        port = serial.Serial(portName, 9600, timeout=2)
+    except Exception as e:
+        return False
 
-        # LED indicator
-        ledPos = (250, 620)
-        newHand.paste(ledColour, [ledPos[0],ledPos[1],ledPos[0]+49,ledPos[1]+47])
-        newHand.paste(ledCover, (ledPos[0], ledPos[1]), ledCover)
+    # If some connection has been made, ensure this is the right device
+    if port:
 
-        newHandImage = ImageTk.PhotoImage(newHand)
-        handPanel.configure(image=newHandImage)
-        handPanel.image = newHandImage
+        # Create a text wrapper for consistent line endings
+        sio = io.TextIOWrapper(io.BufferedRWPair(port, port))
 
-        oldButtonData = buttonData
-        oldLedColour = ledColour
+        sio.write(unicode("gg?\n"))
+        sio.flush()
+        time.sleep(0.1)
 
-    # Update graphs
+        response = sio.readline()
+        return reponse == "gg"
 
-    root.after(10, update)
+    else:
+
+        return False
+
+def update(noConnect=False):
+
+    global connected
+    global count
+
+    # If not connected, attempt to connect
+    if not connected and not noConnect:
+
+        print("attemping Serial connection (" + str(count) + ")")
+        count += 1
+
+        if osName == "Windows":
+            connected = attempConnection('COM1') or attempConnection('COM2')
+        else:
+            connected = attempConnection('/dev/ttyUSB0') or attempConnection('/dev/ttyUSB1')
+
+        root.after(3000, update)
+
+    else:
+
+        global oldButtonData
+        global oldLedColour
+
+        if connected:
+
+            # Get the update from the Serial input buffer
+            updateString = sio.readline()
+
+            # Process the update string
+            splitString = updateString.split(",")
+
+            # Update the graph data sets
+            for i in range(3):
+
+                accelData[i].append(int(splitString[i]))
+                if len(accelData[i]) > maxPoints: accelData[i] = accelData[-maxPoints:-1]
+
+                gyroData[i].append(int(splitString[i+3]))
+                if len(gyroData[i]) > maxPoints: gyroData[i] = gyroData[-maxPoints:-1]
+
+            # Update the button info
+            for i in range(5):
+                buttonData[i] = int(splitString[6+i])
+
+            # Update the LED info
+            for i in range(3):
+                ledColour[i] = int(splitString[12+i])
+
+        # Check if the hand has changed at all
+        handChanged = False
+        for i in range(len(buttonData)):
+            if buttonData[i] != oldButtonData[i]:
+                handChanged = True
+                break
+
+        # Check if the LED has changed at all
+        for i in range(len(ledColour)):
+            if ledColour[i] != oldLedColour[i]:
+                handChanged = True
+                break
+
+        # If one of those has changed, update everything
+        if handChanged:
+
+            # Create base hand image
+            newHand = Image.new('RGBA', (570, 700))
+            newHand.paste(palm, (100+relX, 280+relY), palm)
+
+            # Is each finger closed or open?
+            if buttonData[1] == 0: newHand.paste(indexOpen, (318+relX, 82+relY), indexOpen)
+            else: newHand.paste(indexClosed, (309+relX, 280+relY), indexClosed)
+            if buttonData[2] == 0: newHand.paste(middleOpen, (248+relX, 47+relY), middleOpen)
+            else: newHand.paste(middleClosed, (246+relX, 265+relY), middleClosed)
+            if buttonData[3] == 0: newHand.paste(ringOpen, (168+relX, 77+relY), ringOpen)
+            else: newHand.paste(ringClosed, (171+relX, 267+relY), ringClosed)
+            if buttonData[4] == 0: newHand.paste(littleOpen, (91+relX, 148+relY), littleOpen)
+            else: newHand.paste(littleClosed, (100+relX, 294+relY), littleClosed)
+            if buttonData[0] == 0: newHand.paste(thumbOpen, (386+relX, 318+relY), thumbOpen)
+            else: newHand.paste(thumbClosed, (273+relX, 349+relY), thumbClosed)
+
+            # LED indicator
+            ledPos = (250, 620)
+            newHand.paste(ledColour, [ledPos[0],ledPos[1],ledPos[0]+49,ledPos[1]+47])
+            newHand.paste(ledCover, (ledPos[0], ledPos[1]), ledCover)
+
+            # Full hand plus LED image
+            newHandImage = ImageTk.PhotoImage(newHand)
+            handPanel.configure(image=newHandImage)
+            handPanel.image = newHandImage
+
+            oldButtonData = buttonData
+            oldLedColour = ledColour
+
+        root.after(10, update)
 
 if __name__ == "__main__":
+
+    # Get the OS
+    osName = platform.system()
 
     # Set up the tkinter background
     root = tk.Tk()
@@ -105,40 +195,45 @@ if __name__ == "__main__":
     handPanel.configure(bg="white", image=handImage)
     handPanel.grid(row=0, column=1)
 
+    # Animation function for the acceleration graph
     def animateAccel(i):
 
         # Update the x/y/z accel graphs
-        accelLines[0].set_ydata(np.sin(x+i/20.0))
-        accelLines[1].set_ydata(np.sin(x+10+i/20.0))
-        accelLines[2].set_ydata(np.sin(x+20+i/20.0))
+        for i in range(3):
+            accelLines[i].set_data(np.arange(0, len(accelData[i]), 1), accelData[i])
 
         return accelLines
 
+    # Animation function for the gyro graph
     def animateGyro(i):
 
-        # Update the x/y/z accel graphs
-        gyroLines[0].set_ydata(np.sin(x+i/20.0))
-        gyroLines[1].set_ydata(np.sin(x+10+i/20.0))
-        gyroLines[2].set_ydata(np.sin(x+20+i/20.0))
+        # Update the x/y/z gyro graphs
+        for i in range(3):
+            gyroLines[i].set_data(np.arange(0, len(gyroData[i]), 1), gyroData[i])
 
         return gyroLines
 
-    x = np.arange(0, 2*np.pi, 0.01)
+    x = np.arange(0, maxPoints, 1)
     graphs = plt.Figure(figsize=(6, 8), dpi=100,)
 
     canvas = FigureCanvasTkAgg(graphs, master=root)
     canvas.get_tk_widget().grid(row=0, column=0, rowspan=1)
 
     accelAxes = graphs.add_subplot(211)
-    gyroAxes = graphs.add_subplot(212)
     accelAxes.get_xaxis().set_visible(False)
-    gyroAxes.get_xaxis().set_visible(False)
+    accelAxes.set_xlim([0, maxPoints])
+    accelAxes.set_xlim([-10, 10])
     accelLines = []
+
+    gyroAxes = graphs.add_subplot(212)
+    gyroAxes.get_xaxis().set_visible(False)
+    gyroAxes.set_xlim([0, maxPoints])
+    gyroAxes.set_xlim([-10, 10])
     gyroLines = []
 
     for i in range(3):
-        accelLines.append(accelAxes.plot(x, np.sin(x))[0])
-        gyroLines.append(gyroAxes.plot(x, np.sin(x))[0])
+        accelLines.append(accelAxes.plot(np.arange(0, len(gyroData[i]), 1), gyroData[i])[0])
+        gyroLines.append(gyroAxes.plot(np.arange(0, len(gyroData[i]), 1), accelData[i])[0])
 
     accelAni = animation.FuncAnimation(graphs, animateAccel, interval=25, blit=True)
     gyroAni = animation.FuncAnimation(graphs, animateGyro, interval=25, blit=True)
@@ -146,7 +241,8 @@ if __name__ == "__main__":
     graphs.tight_layout()
     graphs.subplots_adjust(bottom=0.05, top=0.97, right=0.95)
 
-    update()
+    update(True)
+
     def callbackHand(e):
         global buttonData
         if buttonData[0] == 0: buttonData = [1, 1, 1, 1, 1]
