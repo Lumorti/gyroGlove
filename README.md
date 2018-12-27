@@ -30,33 +30,31 @@ Assembling the gyroGlove requires soldering, if you are unable to solder I recom
 
 1. Cut the wires to the right sizes and strip:
 
- [PIC]
+   [PIC]
 
 1. Solder the wires to the gyroscopes:
 
- [PIC]
+   [PIC]
 
 1. Solder the wires to the connectors:
 
- [PIC]
+   [PIC]
 
 1. Solder certain wires together:
 
- [PIC]
+   [PIC]
 
 1. Wrap the wires together and then tape at the ends:
 
- (other cable management methods are available)
-
-  [PIC]
+   [PIC]
 
 1. Sew the accelerometers into one of the gloves:
 
- [PIC]
+   [PIC]
 
 ### Connecting to an Arduino
 
-To connect the data glove to an Arduino plug the pins into the correct headers:
+To connect the data glove to an Arduino plug the wires into their respective headers:
 
 - The power wire -> 5V
 - The ground wire -> GND
@@ -68,11 +66,13 @@ To connect the data glove to an Arduino plug the pins into the correct headers:
 - The ring finger wire -> 4
 - The little finger wire -> 5
 
+The finger wires can be moved around if need, but you'll also need to update the pins in the software
+
 ### Using gyroglovelib
 
 gyroglovelib is the Arduino library used to control the gyro glove
 
-Basic usage:
+Basic example:
 
 ```c++
 #include <gyroglovelib.h>
@@ -106,12 +106,17 @@ List of main functions:
 int accX = glove.getXAccel();
 int rotX = glove.getXRot();
 
-// Get the open or close state of a finger (thumb/index/middle/ring/little)
+// Get whether a finger is open (thumb/index/middle/ring/little)
 bool isIndexOpen = glove.getIndexOpen()
 
-// Did a certain finger just close? (thumb/index/middle/ring/little)
-bool indexWasClosed = glove.didIndexClose()
+// Did a certain finger just open/close? (thumb/index/middle/ring/little)
 bool indexWasOpened = glove.didIndexOpen()
+bool indexWasClosed = glove.didIndexClose()
+
+// Was a certain finger gesture completed?
+// This example checks for two index taps then a ring tap
+// 0 is thumb tap, 1 is index tap ... 4 is little tap
+bool gestureCompleted = glove.didGesture([1, 1, 3])
 
 // Change the LED colour (RGB values from 0 -> 255)
 glove.setLED(0, 0, 255)
@@ -125,20 +130,23 @@ int rotXRaw = glove.getXRotRaw();
 Optional settings, can be changed in either setup() or loop(), defaults are shown:
 
 ```c++
-// Whether to output a data string to Serial for use with ggmonitor
+// Set whether to output a data string to Serial for use with ggmonitor
 glove.setOutput(false);
 
 // Set the baud rate of Serial output
 glove.setRate(9600);
 
-// Change which pins are for which gyro, setting to -1 disables
+// Set which pins are for which gyro, setting to -1 disables
 glove.setThumb(1);
 glove.setIndex(2);
 glove.setMiddle(3);
 glove.setRing(4);
 glove.setLittle(5);
 
-// Whether an LED is connected
+// Set how long to wait before ending a gesture
+glove.setTimeout(50);
+
+// Set whether an LED is connected
 glove.setLEDConnected(true);
 ```
 
@@ -147,12 +155,12 @@ glove.setLEDConnected(true);
 
 ggmonitor is a cross-platform Python GUI tool allowing the calibration and testing of a gyro glove
 
-To use, first ensure gyroglovelib is initialised correctly and that the following line is in the setup code of the Arduino:
+Ensure gyroglovelib is initialised correctly and that the following line is in the setup code of the Arduino:
 
 ```c++
 glove.setOutput(true)
 ```
 
-Then run the ggmonitor executable (the ".exe" if on Windows, the ".sh" if on Linux), which will bring up a window
+Then run the ggmonitor executable ("ggmonitor.py"), which will bring up a window
 
-Then connect the Arduino via a USB cable and ggmonitor should realise and start displaying data
+Then connect the Arduino via a USB cable and ggmonitor should detect it and start displaying data
