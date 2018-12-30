@@ -99,9 +99,9 @@ Main function list:
 bool didWave = glove.did(Gestures::wave)
 bool didTapIndex = glove.did({Gestures::indexClose, Gestures::indexOpen})
 
-// Get the acceleration/rotation value in a direction (x/y/z), scaled from 1 -> 10
-int accX = glove.getXAccel();
-int rotX = glove.getXRot();
+// Get the acceleration/rotation values (array: {x, y, z}), scaled from 1 -> 10
+int[] acc = glove.getAccel();
+int[] rot = glove.getRot();
 
 // Change the LED colour (RGB values from 0 -> 255)
 glove.setLED(0, 0, 255)
@@ -109,9 +109,9 @@ glove.setLED(0, 0, 255)
 // Get whether a finger is open (thumb/index/middle/ring/little)
 bool isIndexOpen = glove.getIndexOpen()
 
-// Get the raw accelerometer/gyroscope values in a direction (x/y/z)
-int accXRaw = glove.getXAccelRaw();
-int rotXRaw = glove.getXRotRaw();
+// Get the raw accelerometer/gyroscope values (array: {x, y, z})
+int[] accRaw = glove.getAccelRaw();
+int[] rotRaw = glove.getRotRaw();
 ```
 
 Optional settings, can be changed in either setup() or loop(), defaults are shown:
@@ -124,17 +124,23 @@ glove.setOutput(false);
 glove.setRate(9600);
 
 // Set which pins are for which gyro, setting to -1 disables
-glove.setThumb(1);
-glove.setIndex(2);
-glove.setMiddle(3);
-glove.setRing(4);
-glove.setLittle(5);
-
-// Set how long to wait before ending a gesture
-glove.setTimeout(50);
+glove.setHand(1);
+glove.setThumb(2);
+glove.setIndex(3);
+glove.setMiddle(4);
+glove.setRing(5);
+glove.setLittle(6);
 
 // Set whether an LED is connected
 glove.setLEDConnected(true);
+
+// Set which pins are for the LED, setting to -1 disables
+glove.setRed(7);
+glove.setGreen(8);
+glove.setBlue(9);
+
+// Set how long to wait before ending a gesture
+glove.setTimeout(50);
 ```
 
 ### Supported Gesture

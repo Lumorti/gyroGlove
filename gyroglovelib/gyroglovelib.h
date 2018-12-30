@@ -10,17 +10,17 @@
 
 enum Gestures {
 
-    thumbClose,
-    indexClose,
-    middleClose,
-    ringClose,
-    littleClose,
+    THUMBCLOSE,
+    INDEXCLOSE,
+    MIDDLECLOSE,
+    RINGCLOSE,
+    LITTLECLOSE,
 
-    thumbOpen,
-    indexOpen,
-    middleOpen,
-    ringOpen,
-    littleOpen,
+    THUMBOPEN,
+    INDEXOPEN,
+    MIDDLEOPEN,
+    RINGOPEN,
+    LITTLEOPEN,
 
 };
 
@@ -46,8 +46,11 @@ class GyroGlove {
         void setMiddle(int pin);
         void setRing(int pin);
         void setLittle(int pin);
+        void setHand(int pin);
         void setTimeout(int timeout);
         void setLEDConnected(bool connected);
+        void setFingersZOnly(bool optimise);
+        void setScalingFactor(bool factor);
 
         // Getters for the scaled values
         int getXAccel();
@@ -75,19 +78,27 @@ class GyroGlove {
         // Settings
         bool shouldOutput;
         int baudRate;
-        int thumbPin, indexPin, middlePin, ringPin, littlePin;
+        int handPin, thumbPin, indexPin, middlePin, ringPin, littlePin;
         int timeoutIterations;
         bool ledConnected;
+        bool fingersZOnly;
+        int scalingFactor;
 
         // Processed values
         int accX, accY, accZ;
         int rotX, rotY, rotZ;
         Gestures gestureList[];
 
-        // Raw values
+        // Finger values
         bool indexOpen, middleOpen, thumbOpen, ringOpen, littleOpen;
+        bool indexOpenOld, middleOpenOld, thumbOpenOld, ringOpenOld, littleOpenOld;
+
+        // Raw values
         int accXRaw, accYRaw, accZRaw;
         int rotXRaw, rotYRaw, rotYRaw;
+
+        // Add a gesture to the gesture list and update the counter
+        void addGest(Gesture toAdd);
 
 };
 
