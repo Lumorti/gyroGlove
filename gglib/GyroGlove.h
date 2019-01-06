@@ -1,5 +1,5 @@
 /*
-    gyroglovelib.h - Library for interfacing with a gyro glove
+    GyroGlove.h - Library for interfacing with a gyro glove
     https://github.com/Lumorti/gyroGlove
 */
 
