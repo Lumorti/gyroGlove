@@ -143,7 +143,7 @@ glove.setBlue(9);
 glove.setTimeout(50);
 ```
 
-### Supported Gesture
+### Supported Gestures
 
 ### Debugging Using ggmonitor
 
