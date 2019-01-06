@@ -26,6 +26,7 @@ void setup() {
 
 void loop() {
 
+    // If there's any data, process it
     while (Wire.available()) {
 
         // Get the byte from i2c
@@ -53,6 +54,7 @@ void loop() {
 
 }
 
+// Function to save space, sets the LED to a certain RGB value
 void led(int r, int g, int b) {
 
     analogWrite(ledPins[0], r);
