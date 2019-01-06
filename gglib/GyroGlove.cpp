@@ -203,7 +203,7 @@ void GyroGlove::setOutput(bool output) {
 }
 
 // Getters for the finger values
-bool[] GyroGlove::getFingerState()  { return fingersClosed; }
+bool * GyroGlove::getFingerState()  { return fingersClosed; }
 bool GyroGlove::getIndexOpen()      { return fingersClosed[0]; }
 bool GyroGlove::getThumbOpen()      { return fingersClosed[1]; }
 bool GyroGlove::getMiddleOpen()     { return fingersClosed[2]; }
@@ -211,9 +211,9 @@ bool GyroGlove::getRingOpen()       { return fingersClosed[3]; }
 bool GyroGlove::getLittleOpen()     { return fingersClosed[4]; }
 
 // Getters for the scaled values
-int[] GyroGlove::getAccel()         { return acc; }
-int[] GyroGlove::getRot()           { return rot; }
+int * GyroGlove::getAccel()         { return acc; }
+int * GyroGlove::getRot()           { return rot; }
 
 // Getters for the raw values
-int[] GyroGlove::getAccelRaw()      { return accRaw; }
-int[] GyroGlove::getRotRaw()        { return rotRaw; }
+int * GyroGlove::getAccelRaw()      { return accRaw; }
+int * GyroGlove::getRotRaw()        { return rotRaw; }
