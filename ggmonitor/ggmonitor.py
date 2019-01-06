@@ -1,5 +1,10 @@
 #! /usr/bin/env python3
 
+#
+#    ggmonitor.py - App for testing the gyroglove
+#    https://github.com/Lumorti/gyroGlove
+#
+
 # Load the GUI framework
 import tkinter as tk
 from PIL import Image, ImageTk
