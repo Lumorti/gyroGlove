@@ -8,11 +8,11 @@
 int address = 0x57;
 
 // Hand, thumb, index, middle, ring, little
-int handPins[] = {1, 2, 3, 4, 5, 6};
+int handPins[] = {13, 8, 7, 6, 5, 4};
 int lastPin = -1;
 
 // r, g, b
-int ledPins[] = {7, 8, 9};
+int ledPins[] = {9, 10, 11};
 
 void setup() {
 
