@@ -10,32 +10,39 @@ Features:
 - the parts only cost around £20 total
 - easy to use Arduino library
 
-Example Arduino code:
+[GIF of the glove]
+
+Arduino code used above:
 
 ```c++
 #include <gyroglovelib.h>
 GyroGlove glove;
 
-void setup() {}
+void setup() {
+
+    // Initialise the glove
+    glove.init();
+
+}
+
 void loop() {
 
-    // Get and process all the data from the glove
+    // Get all the data from the glove
     glove.update();
 
     // If the user is waving, set the LED to green
-    if (glove.did(Gestures::wave)) { glove.setLED(0, 255, 0); }
+    if (glove.did(Gestures::WAVE)) {glove.setLED("g");}
 
     // If the user has only their middle and ring fingers closed, set to red
-    else if (glove.did(Gestures::rockRoll)) { glove.setLED(255, 0, 0); }
+    else if (glove.did(Gestures::ROCKANDROLL)) {glove.setLED("r");}
 
 }
 ```
 
-[GIF of the glove]
-
 ### Parts Required
 
 - 6 MPU6050 accelerometer/gyroscope modules
+- Arduino Pro Mini (or equivalent)
 - 2 pairs of medium thickness gloves
 - some 24 AWG wire in whatever colours
 - male to male jumper cables
@@ -85,7 +92,7 @@ int[] accRaw = glove.getAccelRaw();
 int[] rotRaw = glove.getRotRaw();
 ```
 
-Optional settings, can be changed in either setup() or loop(), defaults are shown:
+Optional settings, should be changed in setup(), defaults are shown:
 
 ```c++
 // Set whether to output a data string to Serial for use with ggmonitor
@@ -94,24 +101,8 @@ glove.setOutput(false);
 // Set the baud rate of Serial output
 glove.setRate(9600);
 
-// Set which pins are for which gyro, setting to -1 disables
-glove.setHand(1);
-glove.setThumb(2);
-glove.setIndex(3);
-glove.setMiddle(4);
-glove.setRing(5);
-glove.setLittle(6);
-
-// Set whether an LED is connected
-glove.setLEDConnected(true);
-
-// Set which pins are for the LED, setting to -1 disables
-glove.setRed(7);
-glove.setGreen(8);
-glove.setBlue(9);
-
-// Set how long to wait before ending a gesture
-glove.setTimeout(50);
+// Set how many iterations to wait before ending a gesture
+glove.setTimeout(10);
 ```
 
 ### Supported Gestures
@@ -129,7 +120,7 @@ There are some dependencies, however most should already be installed if python 
 - numpy
 - matplotlib
 
-On Ubuntu these can be installed with apt:
+On Ubuntu/Debian these can be installed with apt:
 
 ```sh
 sudo apt update
@@ -142,12 +133,28 @@ On Windows these can be installed with pip after installing python3:
 pip3 install --upgrade matplotlib numpy serial tkinter pil
 ```
 
-Ensure gyroglovelib is initialised correctly and that the following line is in the setup code of the Arduino:
+Ensure that the following lines are in their respective sections in the code of the Arduino:
 
 ```c++
-glove.setOutput(true)
+#include <gyroglovelib.h>
+GyroGlove glove;
+
+void setup() {
+
+    // Initialise the glove
+    glove.init();
+    glove.setOutput(true)
+
+}
+
+void loop() {
+
+    // Get all the data from the glove
+    glove.update();
+
+}
 ```
 
-Then run the ggmonitor executable ("ggmonitor.py"), which will bring up a window
+Run the ggmonitor executable ("ggmonitor.py") on your computer, which will create a ggmonitor window
 
 Then connect the Arduino via a USB cable and ggmonitor should detect it and start displaying data
