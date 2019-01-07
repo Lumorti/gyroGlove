@@ -58,13 +58,6 @@ To connect the data glove to an Arduino plug the wires into their respective hea
 - The ground wire -> GND
 - The SDA wire -> SDA
 - The SDL wire -> SDL
-- The thumb wire -> 1
-- The index finger wire -> 2
-- The middle finger wire -> 3
-- The ring finger wire -> 4
-- The little finger wire -> 5
-
-The finger wires can be moved around if need, but you'll also need to update the pins in the software
 
 ### Using gyroglovelib
 
