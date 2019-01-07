@@ -19,8 +19,10 @@ GyroGlove::GyroGlove() {
     int scalingFactor = 1;
     int fingerCloseThreshold = 5;
 
-    int chipAddress = 0x57;
-    int gyroAddress = 0x69;
+    // Fixed params
+    const int chipAddress = 0x57;
+    const int gyroAddress = 0x69;
+    const int maxGestures = 100'
 
     // fingerPins = {handPin, thumbPin, indexPin, middlePin, ringPin, littlePin};
     int fingerPins[] = {1, 2, 3, 4, 5, 6};
@@ -31,7 +33,7 @@ GyroGlove::GyroGlove() {
     // Processed values
     int acc[] = {0, 0, 0}
     int rot[] = {0, 0, 0}
-    Gestures gestureList[100];
+    Gestures gestureList[maxGestures];
 
     // Finger values = {thumbOpen, indexOpen, middleOpen, ringOpen, littleOpen}
     bool fingersClosed[] = {false, false, false, false, false}
@@ -39,8 +41,8 @@ GyroGlove::GyroGlove() {
     int fingerAccels[] = {0, 0, 0, 0, 0};
 
     // Raw values
-    int accRaw[] = {0, 0, 0}
-    int rotRaw[] = {0, 0, 0}
+    int accRaw[] = {0, 0, 0};
+    int rotRaw[] = {0, 0, 0};
     int temperature = 0;
 
     // Keep track of how many updates have occured since the last gesture
@@ -58,7 +60,7 @@ void GyroGlove::init() {
     // Go through all the different gyroscopes and wake them up
     for (int i = 0; i < 6; i++) {
 
-        digitalWrite(fingerPins[i], HIGH)
+        digitalWrite(fingerPins[i], HIGH);
         Wire.beginTransmission(gyroAddress);
         Wire.write(0x6B);
         Wire.write(0);
@@ -149,8 +151,8 @@ void GyroGlove::update() {
 void GyroGlove::addGest(Gesture toAdd) {
 
     gestureList[nextGestureIndex] = toAdd;
-    nextGestureIndex += 1
-    if (nextGestureIndex > 100) {nextGestureIndex = 0;}
+    nextGestureIndex += 1;
+    if (nextGestureIndex > maxGestures) {nextGestureIndex = 0;}
 
 }
 
@@ -193,12 +195,7 @@ void GyroGlove::setBlue(int pin)                    { ledPins[2] = pin; }
 void GyroGlove::setOutput(bool output) {
 
     shouldOutput = output;
-
-    if (shouldOutput) {
-
-        Serial.begin();
-
-    }
+    if (shouldOutput) {Serial.begin();}
 
 }
 
