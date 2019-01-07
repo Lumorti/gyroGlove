@@ -48,29 +48,7 @@ Although in order to actually use it you'll obviously need an Arduino (or simila
 
 Assembling the gyroGlove requires soldering, if you can't solder I recommend learning since it's a really useful skill. Alternatively you could attempt to hold the wire connections together with tape, but that's gonna be real flimsy and I don't recommend it
 
-1. Cut the wires to the right sizes and strip:
-
-   [PIC]
-
-1. Solder the wires to the gyroscopes:
-
-   [PIC]
-
-1. Solder the wires to the connectors:
-
-   [PIC]
-
-1. Solder certain wires together:
-
-   [PIC]
-
-1. Wrap the wires together and then tape at the ends:
-
-   [PIC]
-
-1. Attach the accelerometers to one of the gloves:
-
-   [PIC]
+![Wiring guide](https://github.com/Lumorti/gyroGlove/raw/master/images/circuits.png "Wiring guide")
 
 ### Connecting to an Arduino
 
