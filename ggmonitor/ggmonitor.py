@@ -31,7 +31,7 @@ accelData = [[], [], []]
 gyroData = [[], [], []]
 buttonData = [0, 0, 1, 1, 0]
 oldButtonData = [1, 1, 1, 1, 1]
-ledColour = (255, 0, 0)
+ledColour = "b"
 oldLedColour = (255, 255, 255)
 
 updateString = "0,0,0,0,0,0,0,0,0,0,0"
@@ -103,6 +103,8 @@ def update(noConnect=False):
             # Get the update from the Serial input buffer
             updateString = sio.readline()
 
+            print(updateString)
+
             # Process the update string
             splitString = updateString.split(",")
 
@@ -117,11 +119,11 @@ def update(noConnect=False):
 
             # Update the button info
             for i in range(5):
-                buttonData[i] = int(splitString[6+i])
+                buttonData[i] = int(splitString[7+i])
 
             # Update the LED info
-            for i in range(3):
-                ledColour[i] = int(splitString[12+i])
+            for i in range(1):
+                ledColour = splitString[12]
 
         # Check if the hand has changed at all
         handChanged = False
@@ -131,10 +133,9 @@ def update(noConnect=False):
                 break
 
         # Check if the LED has changed at all
-        for i in range(len(ledColour)):
-            if ledColour[i] != oldLedColour[i]:
-                handChanged = True
-                break
+        if ledColour != oldLedColour:
+            handChanged = True
+            break
 
         # If one of those has changed, update everything
         if handChanged:
@@ -157,7 +158,7 @@ def update(noConnect=False):
 
             # LED indicator
             ledPos = (250, 620)
-            newHand.paste(ledColour, [ledPos[0],ledPos[1],ledPos[0]+49,ledPos[1]+47])
+            newHand.paste(ledCharToCol(ledColour), [ledPos[0],ledPos[1],ledPos[0]+49,ledPos[1]+47])
             newHand.paste(ledCover, (ledPos[0], ledPos[1]), ledCover)
 
             # Full hand plus LED image
@@ -169,6 +170,18 @@ def update(noConnect=False):
             oldLedColour = ledColour
 
         root.after(10, update)
+
+def ledCharToCol(ledChar):
+
+    if ledChar == "r": return (255, 0, 0)
+    elif ledChar == "g": return (0, 255, 0)
+    elif ledChar == "b": return (0, 0, 255)
+    elif ledChar == "y": return (255, 255, 0)
+    elif ledChar == "c": return (0, 255, 255)
+    elif ledChar == "m": return (255, 0, 255)
+    elif ledChar == "w": return (255, 255, 255)
+    elif ledChar == "o": return (255, 165, 0)
+    elif ledChar == "l": return (0, 0, 0)
 
 if __name__ == "__main__":
 
@@ -255,8 +268,8 @@ if __name__ == "__main__":
 
     def callbackLed(e):
         global ledColour
-        if ledColour[0] == 0: ledColour = (255, 0, 0)
-        else: ledColour = (0, 0, 255)
+        if ledColour == "b": ledColour = "r"
+        else: ledColour = "b"
 
     root.bind("<Return>", callbackHand)
     root.bind("<BackSpace>", callbackLed)
