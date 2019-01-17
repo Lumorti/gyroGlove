@@ -22,6 +22,17 @@ enum Gestures {
     RINGOPEN,
     LITTLEOPEN,
 
+    THUMBTAP,
+    INDEXTAP,
+    MIDDLETAP,
+    RINGTAP,
+    LITTLETAP,
+
+    WAVE,
+    ROCKANDROLL,
+    GUN,
+    SHOCKER,
+
 };
 
 class GyroGlove {
@@ -31,6 +42,9 @@ class GyroGlove {
         // Class constructor
         GyroGlove();
 
+        // Initliasing function
+        void init();
+
         // Main update function
         void update();
 
@@ -38,35 +52,28 @@ class GyroGlove {
         bool did(Gestures gestures[]);
         bool did(Gestures gesture);
 
+        // Change the LED
+        void setLED(char colour);
+
         // Setters for settings
-        void setOutput(bool output);
         void setRate(int rate);
-        void setThumb(int pin);
-        void setIndex(int pin);
-        void setMiddle(int pin);
-        void setRing(int pin);
-        void setLittle(int pin);
-        void setHand(int pin);
         void setTimeout(int timeout);
         void setLEDConnected(bool connected);
-        void setFingersZOnly(bool optimise);
         void setScalingFactor(bool factor);
+        void setFingerThresh(bool threshold);
+
+        void setOutput(bool output);
 
         // Getters for the scaled values
-        int getXAccel();
-        int getYAccel();
-        int getZAccel();
-        int getXRot();
-        int getYRot();
-        int getZRot();
+        int * getAccel();
+        int * getRot();
 
         // Getters for the raw values
-        int getXAccelRaw();
-        int getYAccelRaw();
-        int getZAccelRaw();
-        int getXRotRaw();
-        int getYRotRaw();
-        int getZRotRaw();
+        int * getAccelRaw();
+        int * getRotRaw();
+
+        // Getters for the finger values
+        bool * getFingerState();
         bool getIndexOpen();
         bool getThumbOpen();
         bool getMiddleOpen();
@@ -78,27 +85,43 @@ class GyroGlove {
         // Settings
         bool shouldOutput;
         int baudRate;
-        int handPin, thumbPin, indexPin, middlePin, ringPin, littlePin;
         int timeoutIterations;
         bool ledConnected;
-        bool fingersZOnly;
         int scalingFactor;
+        int fingerCloseThreshold;
+
+        // Fixed params
+        static const int chipAddress = 0x57;
+        static const int gyroAddress = 0x69;
+        static const int maxGestures = 100;
+
+        // ledPins = {red, green, blue};
+        int ledPins[];
 
         // Processed values
-        int accX, accY, accZ;
-        int rotX, rotY, rotZ;
-        Gestures gestureList[];
+        int acc[];
+        int rot[];
+        Gestures gestureList[maxGestures];
 
-        // Finger values
-        bool indexOpen, middleOpen, thumbOpen, ringOpen, littleOpen;
-        bool indexOpenOld, middleOpenOld, thumbOpenOld, ringOpenOld, littleOpenOld;
+        // Finger values = {thumbOpen, indexOpen, middleOpen, ringOpen, littleOpen}
+        bool fingersClosed[];
+        bool fingersClosedOld[];
+        int fingerAccels[];
 
         // Raw values
-        int accXRaw, accYRaw, accZRaw;
-        int rotXRaw, rotYRaw, rotYRaw;
+        int accRaw[];
+        int rotRaw[];
+        int temperature;
+
+        // Keep track of how many updates have occured since the last gesture
+        int sinceLastGesture;
+
+        // For keeping track of the gesture array
+        int nextGestureIndex;
+        int oldGestureIndex;
 
         // Add a gesture to the gesture list and update the counter
-        void addGest(Gesture toAdd);
+        void addGest(Gestures toAdd);
 
 };
 
