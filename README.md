@@ -15,7 +15,7 @@ Features:
 Arduino code used above:
 
 ```c++
-#include <gyroglovelib.h>
+#include <GyroGlove.h>
 GyroGlove glove;
 
 void setup() {
