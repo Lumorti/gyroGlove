@@ -22,22 +22,19 @@ GyroGlove::GyroGlove() {
     // Fixed params
     const int chipAddress = 0x57;
     const int gyroAddress = 0x69;
-    const int maxGestures = 100'
-
-    // fingerPins = {handPin, thumbPin, indexPin, middlePin, ringPin, littlePin};
-    int fingerPins[] = {1, 2, 3, 4, 5, 6};
+    static const int maxGestures = 100;
 
     // ledPins = {red, green, blue};
     int ledPins[] = {7, 8, 9};
 
     // Processed values
-    int acc[] = {0, 0, 0}
-    int rot[] = {0, 0, 0}
+    int acc[] = {0, 0, 0};
+    int rot[] = {0, 0, 0};
     Gestures gestureList[maxGestures];
 
     // Finger values = {thumbOpen, indexOpen, middleOpen, ringOpen, littleOpen}
-    bool fingersClosed[] = {false, false, false, false, false}
-    bool fingersClosedOld[] = {false, false, false, false, false}
+    bool fingersClosed[] = {false, false, false, false, false};
+    bool fingersClosedOld[] = {false, false, false, false, false};
     int fingerAccels[] = {0, 0, 0, 0, 0};
 
     // Raw values
@@ -57,18 +54,23 @@ GyroGlove::GyroGlove() {
 // Wake up all the gyros
 void GyroGlove::init() {
 
+    Wire.begin();
+
     // Go through all the different gyroscopes and wake them up
     for (int i = 0; i < 6; i++) {
 
-        digitalWrite(fingerPins[i], HIGH);
+        // Tell the helper chip to enable the gyro for that finger
+        Wire.beginTransmission(chipAddress);
+        Wire.write(char(i+1));
+        Wire.endTransmission(true);
+
+        // Wake up that chip
         Wire.beginTransmission(gyroAddress);
         Wire.write(0x6B);
         Wire.write(0);
         Wire.endTransmission(true);
 
     }
-
-    Wire.begin();
 
 }
 
@@ -101,7 +103,7 @@ void GyroGlove::update() {
     // Go through all the different finger gyroscopes and get just the Z values
     for (int i = 1; i < 6; i++) {
 
-        // Tell the helder chip to enable the gyro for that finger
+        // Tell the helper chip to enable the gyro for that finger
         Wire.beginTransmission(chipAddress);
         Wire.write(char(i+1));
         Wire.endTransmission(true);
@@ -110,7 +112,7 @@ void GyroGlove::update() {
         Wire.beginTransmission(gyroAddress);
         Wire.write(0x47);
         Wire.endTransmission(false);
-        Wire.requestFrom(MPU_addr, 2, true);
+        Wire.requestFrom(gyroAddress, 2, true);
 
         // Get the pair of bytes, then combine them
         fingerAccels[i] = (Wire.read() << 8 | Wire.read());
@@ -141,14 +143,25 @@ void GyroGlove::update() {
     // If told to output the data to serial, do so
     if (shouldOutput) {
 
-        Serial.println("test");
+        Serial.print(acc[0]); Serial.print(",");
+        Serial.print(acc[1]); Serial.print(",");
+        Serial.print(acc[2]); Serial.print(",");
+        Serial.print(rot[0]); Serial.print(",");
+        Serial.print(rot[1]); Serial.print(",");
+        Serial.print(rot[2]); Serial.print(",");
+        Serial.print(fingersClosed[0]); Serial.print(",");
+        Serial.print(fingersClosed[1]); Serial.print(",");
+        Serial.print(fingersClosed[2]); Serial.print(",");
+        Serial.print(fingersClosed[3]); Serial.print(",");
+        Serial.print(fingersClosed[4]); Serial.print(",");
+        Serial.println(",");
 
     }
 
 }
 
 // Add a gesture to the gesture list
-void GyroGlove::addGest(Gesture toAdd) {
+void GyroGlove::addGest(Gestures toAdd) {
 
     gestureList[nextGestureIndex] = toAdd;
     nextGestureIndex += 1;
@@ -156,19 +169,19 @@ void GyroGlove::addGest(Gesture toAdd) {
 
 }
 
-// Check for a gesture (main array form)
-bool GyroGlove::did(Gestures gestures[]) {
+// Set the LED to a certain colour
+void GyroGlove::setLED(char colour) {
 
-
+    Wire.beginTransmission(chipAddress);
+    Wire.write(colour);
+    Wire.endTransmission(true);
 
 }
 
-// Set the LED to a certain colour
-void GyroGlove::setLED(char c) {
+// Check for a gesture (main array form)
+bool GyroGlove::did(Gestures gestures[]) {
 
-    analogWrite(ledPins[0], r);
-    analogWrite(ledPins[1], g);
-    analogWrite(ledPins[2], b);
+    return true;
 
 }
 
@@ -176,26 +189,16 @@ void GyroGlove::setLED(char c) {
 bool GyroGlove::did(Gestures gesture) { return did({gesture}); }
 
 // Setters for settings
-void GyroGlove::setHand(int pin)                    { fingerPins[0] = pin; }
-void GyroGlove::setThumb(int pin)                   { fingerPins[1] = pin; }
-void GyroGlove::setIndex(int pin)                   { fingerPins[2] = pin; }
-void GyroGlove::setMiddle(int pin)                  { fingerPins[3] = pin; }
-void GyroGlove::setRing(int pin)                    { fingerPins[4] = pin; }
-void GyroGlove::setLittle(int pin)                  { fingerPins[5] = pin; }
 void GyroGlove::setRate(int rate)                   { baudRate = rate; }
 void GyroGlove::setTimeout(int timeout)             { timeoutIterations = timeout; }
 void GyroGlove::setLEDConnected(bool connected)     { ledConnected = connected; }
 void GyroGlove::setScalingFactor(bool factor)       { scalingFactor = factor; }
 void GyroGlove::setFingerThresh(bool threshold)     { fingerCloseThreshold = threshold; }
 
-void GyroGlove::setRed(int pin)                     { ledPins[0] = pin; }
-void GyroGlove::setGreen(int pin)                   { ledPins[1] = pin; }
-void GyroGlove::setBlue(int pin)                    { ledPins[2] = pin; }
-
 void GyroGlove::setOutput(bool output) {
 
     shouldOutput = output;
-    if (shouldOutput) {Serial.begin();}
+    if (shouldOutput) {Serial.begin(baudRate);}
 
 }
 
