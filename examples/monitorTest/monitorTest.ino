@@ -16,6 +16,4 @@ void loop() {
     // Get all the data from the glove
     glove.update();
 
-    delay(200);
-
 }
