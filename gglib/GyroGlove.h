@@ -10,28 +10,60 @@
 
 enum Gestures {
 
+    // Close gestures
     THUMBCLOSE,
     INDEXCLOSE,
     MIDDLECLOSE,
     RINGCLOSE,
     LITTLECLOSE,
 
+    // Open gestures
     THUMBOPEN,
     INDEXOPEN,
     MIDDLEOPEN,
     RINGOPEN,
     LITTLEOPEN,
 
+    // Rotations
+    ROTNEGZ,
+    ROTPOSZ,
+    ROTNEGX,
+    ROTPOSX,
+    ROTNEGY,
+    ROTPOSY,
+
+    // Accelerations
+    ACCNEGZ,
+    ACCPOSZ,
+    ACCNEGX,
+    ACCPOSX,
+    ACCNEGY,
+    ACCPOSY,
+
+    // Tap = close + open
     THUMBTAP,
     INDEXTAP,
     MIDDLETAP,
     RINGTAP,
     LITTLETAP,
 
+    // WAVE = ROTNEGZ, ROTPOSZ
     WAVE,
+
+    // ROCKANDROLL = (LITTLEOPEN, INDXOPEN) || (MIDDLECLOSE, RINGCLOSE)
     ROCKANDROLL,
+
+    // GUN = (LITTLECLOSE, RINGCLOSE) || (INDXOPEN, MIDDLEOPEN)
     GUN,
-    SHOCKER,
+
+    // MIDDLEFINGER = MIDDLEOPEN
+    MIDDLEFINGER,
+
+    // HANDCLOSE = INDEXCLOSE, MIDDLECLOSE, RINGCLOSE, LITTLECLOSE
+    HANDCLOSE,
+
+    // HANDOPEN = INDEXOPEN, MIDDLEOPEN, RINGOPEN, LITTLEOPEN
+    HANDOPEN,
 
 };
 
@@ -87,7 +119,8 @@ class GyroGlove {
         int baudRate = 9600;
         int timeoutIterations = 10;
         bool ledConnected = true;
-        int fingerCloseThreshold = 5;
+        int rotThreshold = 10000;
+        int accThreshold = 3000;
         float scalingFactor = 1.0;
 
         // Fixed params
@@ -102,12 +135,11 @@ class GyroGlove {
         // Processed values
         int acc[3] = {0, 0, 0};
         int rot[3] = {0, 0, 0};
-        Gestures gestureList[maxGestures];
 
         // Finger values = {thumbOpen, indexOpen, middleOpen, ringOpen, littleOpen}
         bool fingersClosed[5] = {false, false, false, false, false};
         bool fingersClosedOld[5] = {false, false, false, false, false};
-        int16_t fingerAccels[5] = {0, 0, 0, 0, 0};
+        int16_t fingerAccRaw[5] = {0, 0, 0, 0, 0};
 
         // Raw values
         int16_t accRaw[3] = {0, 0, 0};
@@ -118,6 +150,7 @@ class GyroGlove {
         int sinceLastGesture = 0;
 
         // For keeping track of the gesture array
+        Gestures gestureList[maxGestures];
         int nextGestureIndex = 0;
         int oldGestureIndex = 0;
 

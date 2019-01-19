@@ -78,14 +78,14 @@ void GyroGlove::update() {
 
         delay(timeBetween);
 
-        // Just ask for the z axis rotation
+        // Just ask for the y axis rotation
         Wire.beginTransmission(gyroAddress);
-        Wire.write(0x47);
+        Wire.write(0x45);
         Wire.endTransmission(false);
         Wire.requestFrom(gyroAddress, 2, true);
 
         // Get the pair of bytes, then combine them
-        fingerAccels[i] = (Wire.read() << 8 | Wire.read());
+        fingerAccRaw[i] = (Wire.read() << 8 | Wire.read());
 
     }
 
@@ -100,8 +100,16 @@ void GyroGlove::update() {
     oldGestureIndex = nextGestureIndex;
 
     // See if any gestures were performed
-    if (fingerAccels[0] > fingerCloseThreshold && !fingersClosed[0]) {addGest(Gestures::THUMBCLOSE); fingersClosed[0] = true;}
-    else if (fingerAccels[0] < -fingerCloseThreshold && fingersClosed[0]) {addGest(Gestures::THUMBOPEN); fingersClosed[0] = false;}
+    if (fingerAccRaw[0] > rotThreshold && !fingersClosed[0]) {addGest(Gestures::THUMBCLOSE); fingersClosed[0] = true;}
+    else if (fingerAccRaw[0] < -rotThreshold && fingersClosed[0]) {addGest(Gestures::THUMBOPEN); fingersClosed[0] = false;}
+    if (fingerAccRaw[1] > rotThreshold && !fingersClosed[1]) {addGest(Gestures::INDEXCLOSE); fingersClosed[1] = true;}
+    else if (fingerAccRaw[1] < -rotThreshold && fingersClosed[1]) {addGest(Gestures::INDEXOPEN); fingersClosed[1] = false;}
+    if (fingerAccRaw[2] > rotThreshold && !fingersClosed[2]) {addGest(Gestures::MIDDLECLOSE); fingersClosed[2] = true;}
+    else if (fingerAccRaw[2] < -rotThreshold && fingersClosed[2]) {addGest(Gestures::MIDDLEOPEN); fingersClosed[2] = false;}
+    if (fingerAccRaw[3] > rotThreshold && !fingersClosed[3]) {addGest(Gestures::RINGCLOSE); fingersClosed[3] = true;}
+    else if (fingerAccRaw[3] < -rotThreshold && fingersClosed[3]) {addGest(Gestures::RINGOPEN); fingersClosed[3] = false;}
+    if (fingerAccRaw[4] > rotThreshold && !fingersClosed[4]) {addGest(Gestures::LITTLECLOSE); fingersClosed[4] = true;}
+    else if (fingerAccRaw[4] < -rotThreshold && fingersClosed[4]) {addGest(Gestures::LITTLEOPEN); fingersClosed[4] = false;}
 
     // Did the gesture list change? If so, don't increase the counter
     if (nextGestureIndex == oldGestureIndex) {sinceLastGesture += 1;}
@@ -153,6 +161,31 @@ void GyroGlove::setLED(char colour) {
 // Check for a gesture (main array form)
 bool GyroGlove::did(Gestures gestures[]) {
 
+
+    // Reset temp finger state to start of gestures array
+    for (int i = 1; i < 5; i++) {fingersClosedOld[i] = fingersClosed[i];}
+    for (int i = nextGestureIndex-1; i >= 0; i--){
+
+        switch(gestureList[i]) {
+
+            case Gestures::THUMBCLOSE: fingersClosedOld[0] = false; break;
+            case Gestures::THUMBOPEN: fingersClosedOld[0] = true; break;
+            default: break;
+        }
+
+    }
+
+
+    // For first item in the given array
+
+    // Go through main array
+
+    // Evaluating finger changes
+
+    // Until match
+
+    // Then check next item in array
+
     return false;
 
 }
@@ -165,7 +198,8 @@ void GyroGlove::setRate(int rate)                   { baudRate = rate; }
 void GyroGlove::setTimeout(int timeout)             { timeoutIterations = timeout; }
 void GyroGlove::setLEDConnected(bool connected)     { ledConnected = connected; }
 void GyroGlove::setScalingFactor(float factor)      { scalingFactor = factor; }
-void GyroGlove::setFingerThresh(int threshold)      { fingerCloseThreshold = threshold; }
+void GyroGlove::seRotationThresh(int threshold)     { rotThreshold = threshold; }
+void GyroGlove::seAccelerationThresh(int threshold) { accThreshold = threshold; }
 
 void GyroGlove::setOutput(bool output) {
 
