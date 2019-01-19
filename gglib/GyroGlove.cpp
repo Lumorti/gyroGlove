@@ -3,7 +3,7 @@
     https://github.com/Lumorti/gyroGlove
 */
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include <Wire.h>
 
 #include "GyroGlove.h"
@@ -11,43 +11,7 @@
 // Class constructor
 GyroGlove::GyroGlove() {
 
-    // Settings
-    bool shouldOutput = false;
-    int baudRate = 9600;
-    int timeoutIterations = 10;
-    bool ledConnected = true;
-    int scalingFactor = 1;
-    int fingerCloseThreshold = 5;
 
-    // Fixed params
-    const int chipAddress = 0x57;
-    const int gyroAddress = 0x69;
-    static const int maxGestures = 100;
-
-    // ledPins = {red, green, blue};
-    int ledPins[] = {7, 8, 9};
-
-    // Processed values
-    int acc[] = {0, 0, 0};
-    int rot[] = {0, 0, 0};
-    Gestures gestureList[maxGestures];
-
-    // Finger values = {thumbOpen, indexOpen, middleOpen, ringOpen, littleOpen}
-    bool fingersClosed[] = {false, false, false, false, false};
-    bool fingersClosedOld[] = {false, false, false, false, false};
-    int fingerAccels[] = {0, 0, 0, 0, 0};
-
-    // Raw values
-    int accRaw[] = {0, 0, 0};
-    int rotRaw[] = {0, 0, 0};
-    int temperature = 0;
-
-    // Keep track of how many updates have occured since the last gesture
-    int sinceLastGesture = 0;
-
-    // For keeping track of the gesture array
-    int nextGestureIndex = 0;
-    int oldGestureIndex = 0;
 
 }
 
@@ -57,12 +21,14 @@ void GyroGlove::init() {
     Wire.begin();
 
     // Go through all the different gyroscopes and wake them up
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 1; i++) {
 
         // Tell the helper chip to enable the gyro for that finger
         Wire.beginTransmission(chipAddress);
-        Wire.write(char(i+1));
+        Wire.write(i+1);
         Wire.endTransmission(true);
+
+        delay(timeBetween);
 
         // Wake up that chip
         Wire.beginTransmission(gyroAddress);
@@ -78,12 +44,14 @@ void GyroGlove::init() {
 void GyroGlove::update() {
 
     // The current state is now the old state
-    for (int i = 0; i < 6; i++) {fingersClosedOld[i] = fingersClosed[i];}
+    for (int i = 0; i < 5; i++) {fingersClosedOld[i] = fingersClosed[i];}
 
     // Tell the helder chip to enable the gyro on the back of the hand
     Wire.beginTransmission(chipAddress);
-    Wire.write('1');
+    Wire.write(1);
     Wire.endTransmission(true);
+
+    delay(timeBetween);
 
     // Ask for the full enchilada from the gyro on the back of the hand
     Wire.beginTransmission(gyroAddress);
@@ -101,12 +69,14 @@ void GyroGlove::update() {
     rotRaw[2] = Wire.read() << 8 | Wire.read();
 
     // Go through all the different finger gyroscopes and get just the Z values
-    for (int i = 1; i < 6; i++) {
+    for (int i = 1; i < 5; i++) {
 
         // Tell the helper chip to enable the gyro for that finger
         Wire.beginTransmission(chipAddress);
-        Wire.write(char(i+1));
+        Wire.write(i+1);
         Wire.endTransmission(true);
+
+        delay(timeBetween);
 
         // Just ask for the z axis rotation
         Wire.beginTransmission(gyroAddress);
@@ -120,12 +90,12 @@ void GyroGlove::update() {
     }
 
     // Scale the values
-    acc[0] = accRaw[0] * scalingFactor;
-    acc[1] = accRaw[1] * scalingFactor;
-    acc[2] = accRaw[2] * scalingFactor;
-    rot[0] = rotRaw[0] * scalingFactor;
-    rot[1] = rotRaw[1] * scalingFactor;
-    rot[2] = rotRaw[2] * scalingFactor;
+    acc[0] = int(float(accRaw[0]) * scalingFactor);
+    acc[1] = int(float(accRaw[1]) * scalingFactor);
+    acc[2] = int(float(accRaw[2]) * scalingFactor);
+    rot[0] = int(float(rotRaw[0]) * scalingFactor);
+    rot[1] = int(float(rotRaw[1]) * scalingFactor);
+    rot[2] = int(float(rotRaw[2]) * scalingFactor);
 
     oldGestureIndex = nextGestureIndex;
 
@@ -143,18 +113,18 @@ void GyroGlove::update() {
     // If told to output the data to serial, do so
     if (shouldOutput) {
 
-        Serial.print(acc[0]); Serial.print(",");
-        Serial.print(acc[1]); Serial.print(",");
-        Serial.print(acc[2]); Serial.print(",");
-        Serial.print(rot[0]); Serial.print(",");
-        Serial.print(rot[1]); Serial.print(",");
-        Serial.print(rot[2]); Serial.print(",");
+        Serial.print(accRaw[0]); Serial.print(",");
+        Serial.print(accRaw[1]); Serial.print(",");
+        Serial.print(accRaw[2]); Serial.print(",");
+        Serial.print(rotRaw[0]); Serial.print(",");
+        Serial.print(rotRaw[1]); Serial.print(",");
+        Serial.print(rotRaw[2]); Serial.print(",");
         Serial.print(fingersClosed[0]); Serial.print(",");
         Serial.print(fingersClosed[1]); Serial.print(",");
         Serial.print(fingersClosed[2]); Serial.print(",");
         Serial.print(fingersClosed[3]); Serial.print(",");
         Serial.print(fingersClosed[4]); Serial.print(",");
-        Serial.println(",");
+        Serial.println(ledCol);
 
     }
 
@@ -176,12 +146,14 @@ void GyroGlove::setLED(char colour) {
     Wire.write(colour);
     Wire.endTransmission(true);
 
+    ledCol = colour;
+
 }
 
 // Check for a gesture (main array form)
 bool GyroGlove::did(Gestures gestures[]) {
 
-    return true;
+    return false;
 
 }
 
@@ -192,13 +164,18 @@ bool GyroGlove::did(Gestures gesture) { return did({gesture}); }
 void GyroGlove::setRate(int rate)                   { baudRate = rate; }
 void GyroGlove::setTimeout(int timeout)             { timeoutIterations = timeout; }
 void GyroGlove::setLEDConnected(bool connected)     { ledConnected = connected; }
-void GyroGlove::setScalingFactor(bool factor)       { scalingFactor = factor; }
-void GyroGlove::setFingerThresh(bool threshold)     { fingerCloseThreshold = threshold; }
+void GyroGlove::setScalingFactor(float factor)      { scalingFactor = factor; }
+void GyroGlove::setFingerThresh(int threshold)      { fingerCloseThreshold = threshold; }
 
 void GyroGlove::setOutput(bool output) {
 
     shouldOutput = output;
-    if (shouldOutput) {Serial.begin(baudRate);}
+    if (shouldOutput) {
+
+        Serial.begin(baudRate);
+        Serial.println("connected");
+
+    }
 
 }
 
