@@ -40,7 +40,7 @@ enum Gestures {
     ACCNEGY,
     ACCPOSY,
 
-    // Tap = close + open
+    // Tap = close, open
     THUMBTAP,
     INDEXTAP,
     MIDDLETAP,
@@ -50,19 +50,19 @@ enum Gestures {
     // WAVE = ROTNEGZ, ROTPOSZ
     WAVE,
 
-    // ROCKANDROLL = (LITTLEOPEN, INDXOPEN) || (MIDDLECLOSE, RINGCLOSE)
+    // ROCKANDROLL = (LITTLEOPEN || INDXOPEN || MIDDLECLOSE || RINGCLOSE)  -> [-1, 0, 1, 1, 0]
     ROCKANDROLL,
 
-    // GUN = (LITTLECLOSE, RINGCLOSE) || (INDXOPEN, MIDDLEOPEN)
+    // GUN =  (LITTLECLOSE || RINGCLOSE || INDXOPEN || MIDDLEOPEN || THUMBOPEN) -> [0, 0, 0, 1, 1]
     GUN,
 
-    // MIDDLEFINGER = MIDDLEOPEN
+    // MIDDLEFINGER = MIDDLEOPEN -> [1, 1, 0, 1, 1]
     MIDDLEFINGER,
 
-    // HANDCLOSE = INDEXCLOSE, MIDDLECLOSE, RINGCLOSE, LITTLECLOSE
+    // HANDCLOSE = (INDEXCLOSE, MIDDLECLOSE, RINGCLOSE, LITTLECLOSE, THUMBCLOSE) -> [1, 1, 1, 1, 1]
     HANDCLOSE,
 
-    // HANDOPEN = INDEXOPEN, MIDDLEOPEN, RINGOPEN, LITTLEOPEN
+    // HANDOPEN = (INDEXOPEN, MIDDLEOPEN, RINGOPEN, LITTLEOPEN, THUMBOPEN) -> [0, 0, 0, 0, 0]
     HANDOPEN,
 
 };
@@ -80,29 +80,21 @@ class GyroGlove {
         // Main update function
         void update();
 
-        // Check for a gesture
-        bool did(Gestures gestures[]);
-        bool did(Gestures gesture);
-
         // Change the LED
         void setLED(char colour);
+
+        // Check for a gesture
+        bool did(int size, Gestures gestures[]);
+        bool did(Gestures gesture);
 
         // Setters for settings
         void setRate(int rate);
         void setTimeout(int timeout);
-        void setLEDConnected(bool connected);
-        void setScalingFactor(float factor);
         void setFingerThresh(int threshold);
+        void setRotationThresh(int threshold);
+        void setAccelerationThresh(int threshold);
 
         void setOutput(bool output);
-
-        // Getters for the scaled values
-        int * getAccel();
-        int * getRot();
-
-        // Getters for the raw values
-        int * getAccelRaw();
-        int * getRotRaw();
 
         // Getters for the finger values
         bool * getFingerState();
@@ -112,6 +104,14 @@ class GyroGlove {
         bool getRingOpen();
         bool getLittleOpen();
 
+        // Getters for the scaled values
+        int * getAccel();
+        int * getRot();
+
+        // Getters for the raw values
+        int * getAccelRaw();
+        int * getRotRaw();
+
     private:
 
         // Settings
@@ -119,15 +119,17 @@ class GyroGlove {
         int baudRate = 9600;
         int timeoutIterations = 10;
         bool ledConnected = true;
+        int fingerThreshold = 10000;
         int rotThreshold = 10000;
         int accThreshold = 3000;
-        float scalingFactor = 1.0;
+        float accScalingFactor = 1.0;
+        float rotScalingFactor = 1.0;
 
         // Fixed params
         static const int chipAddress = 0x57;
         static const int gyroAddress = 0x69;
         static const int maxGestures = 10;
-        static const int timeBetween = 20;
+        static const int timeBetween = 100;
 
         // Keep track of the LED colour char
         char ledCol = 'l';
@@ -139,6 +141,7 @@ class GyroGlove {
         // Finger values = {thumbOpen, indexOpen, middleOpen, ringOpen, littleOpen}
         bool fingersClosed[5] = {false, false, false, false, false};
         bool fingersClosedOld[5] = {false, false, false, false, false};
+        bool fingersClosedTemp[5] = {false, false, false, false, false};
         int16_t fingerAccRaw[5] = {0, 0, 0, 0, 0};
 
         // Raw values

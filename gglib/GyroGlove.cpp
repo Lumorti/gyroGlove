@@ -21,7 +21,7 @@ void GyroGlove::init() {
     Wire.begin();
 
     // Go through all the different gyroscopes and wake them up
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 6; i++) {
 
         // Tell the helper chip to enable the gyro for that finger
         Wire.beginTransmission(chipAddress);
@@ -42,9 +42,6 @@ void GyroGlove::init() {
 
 // Main update function
 void GyroGlove::update() {
-
-    // The current state is now the old state
-    for (int i = 0; i < 5; i++) {fingersClosedOld[i] = fingersClosed[i];}
 
     // Tell the helder chip to enable the gyro on the back of the hand
     Wire.beginTransmission(chipAddress);
@@ -69,11 +66,11 @@ void GyroGlove::update() {
     rotRaw[2] = Wire.read() << 8 | Wire.read();
 
     // Go through all the different finger gyroscopes and get just the Z values
-    for (int i = 1; i < 5; i++) {
+    for (int i = 0; i < 5; i++) {
 
         // Tell the helper chip to enable the gyro for that finger
         Wire.beginTransmission(chipAddress);
-        Wire.write(i+1);
+        Wire.write(i+2);
         Wire.endTransmission(true);
 
         delay(timeBetween);
@@ -85,17 +82,18 @@ void GyroGlove::update() {
         Wire.requestFrom(gyroAddress, 2, true);
 
         // Get the pair of bytes, then combine them
-        fingerAccRaw[i] = (Wire.read() << 8 | Wire.read());
+        fingerAccRaw[i] = Wire.read() << 8 | Wire.read();
+        Serial.println(fingerAccRaw[i]);
 
     }
 
     // Scale the values
-    acc[0] = int(float(accRaw[0]) * scalingFactor);
-    acc[1] = int(float(accRaw[1]) * scalingFactor);
-    acc[2] = int(float(accRaw[2]) * scalingFactor);
-    rot[0] = int(float(rotRaw[0]) * scalingFactor);
-    rot[1] = int(float(rotRaw[1]) * scalingFactor);
-    rot[2] = int(float(rotRaw[2]) * scalingFactor);
+    acc[0] = int(float(accRaw[0]) * accScalingFactor);
+    acc[1] = int(float(accRaw[1]) * accScalingFactor);
+    acc[2] = int(float(accRaw[2]) * accScalingFactor);
+    rot[0] = int(float(rotRaw[0]) * rotScalingFactor);
+    rot[1] = int(float(rotRaw[1]) * rotScalingFactor);
+    rot[2] = int(float(rotRaw[2]) * rotScalingFactor);
 
     oldGestureIndex = nextGestureIndex;
 
@@ -116,7 +114,14 @@ void GyroGlove::update() {
     else {sinceLastGesture = 0;}
 
     // If it's been long enough since a gesture, reset the gesture list
-    if (sinceLastGesture > timeoutIterations) {nextGestureIndex = 0;}
+    if (sinceLastGesture > timeoutIterations) {
+
+        nextGestureIndex = 0;
+
+        // Update the fingers list
+        for (int i = 0; i < 5; i++) {fingersClosedOld[i] = fingersClosed[i];}
+
+    }
 
     // If told to output the data to serial, do so
     if (shouldOutput) {
@@ -159,31 +164,26 @@ void GyroGlove::setLED(char colour) {
 }
 
 // Check for a gesture (main array form)
-bool GyroGlove::did(Gestures gestures[]) {
+bool GyroGlove::did(int size, Gestures gestures[]) {
+
+    // Make the temporary array equal to the finger state at start of gesture list
+    for (int i = 0; i < 5; i++) {fingersClosedTemp[i] = fingersClosedOld[i];}
+
+    int startPos = 0;
+
+    for (int i = 0; i < size; i++) {
+
+        for (int j = startPos; j < nextGestureIndex; j++) {
 
 
-    // Reset temp finger state to start of gestures array
-    for (int i = 1; i < 5; i++) {fingersClosedOld[i] = fingersClosed[i];}
-    for (int i = nextGestureIndex-1; i >= 0; i--){
-
-        switch(gestureList[i]) {
-
-            case Gestures::THUMBCLOSE: fingersClosedOld[0] = false; break;
-            case Gestures::THUMBOPEN: fingersClosedOld[0] = true; break;
-            default: break;
         }
 
     }
 
-
     // For first item in the given array
-
     // Go through main array
-
     // Evaluating finger changes
-
     // Until match
-
     // Then check next item in array
 
     return false;
@@ -191,15 +191,18 @@ bool GyroGlove::did(Gestures gestures[]) {
 }
 
 // Check for a gesture (non-array redirect)
-bool GyroGlove::did(Gestures gesture) { return did({gesture}); }
+bool GyroGlove::did(Gestures gesture) {
+
+    return false; //did(1, {gesture});
+
+}
 
 // Setters for settings
-void GyroGlove::setRate(int rate)                   { baudRate = rate; }
-void GyroGlove::setTimeout(int timeout)             { timeoutIterations = timeout; }
-void GyroGlove::setLEDConnected(bool connected)     { ledConnected = connected; }
-void GyroGlove::setScalingFactor(float factor)      { scalingFactor = factor; }
-void GyroGlove::seRotationThresh(int threshold)     { rotThreshold = threshold; }
-void GyroGlove::seAccelerationThresh(int threshold) { accThreshold = threshold; }
+void GyroGlove::setRate(int rate)                    { baudRate = rate; }
+void GyroGlove::setTimeout(int timeout)              { timeoutIterations = timeout; }
+void GyroGlove::setFingerThresh(int threshold)       { fingerThreshold = threshold; }
+void GyroGlove::setRotationThresh(int threshold)     { rotThreshold = threshold; }
+void GyroGlove::setAccelerationThresh(int threshold) { accThreshold = threshold; }
 
 void GyroGlove::setOutput(bool output) {
 
