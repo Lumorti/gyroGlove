@@ -59,6 +59,10 @@ def attempConnection(portName):
     if port:
 
         print("found port on " + str(portName))
+
+        # Empty the serial buffer
+        port.reset_input_buffer()
+
         return True
 
     return False
@@ -94,12 +98,22 @@ def updateGUI():
 
             # Get the update from the Serial input buffer
             rawString = port.readline()
-            updateString = str(rawString.decode("utf-8")).replace("\n", "").replace("\r", "")
 
-            # Process the update string
-            splitString = updateString.split(",")
+            splitString = []
 
-            print(updateString)
+            try:
+
+                updateString = str(rawString.decode("utf-8")).replace("\n", "").replace("\r", "")
+                updateString = updateString.replace("\'", "").replace("--", "-")
+
+                # Process the update string
+                splitString = updateString.split(",")
+
+            except Exception as e:
+
+                pass
+
+            print(splitString)
 
             if len(splitString) == 12:
 
@@ -171,10 +185,12 @@ def updateGUI():
                     handPanel.configure(image=newHandImage)
                     handPanel.image = newHandImage
 
-                    oldButtonData = buttonData
+                    for i in range(len(buttonData)):
+                        oldButtonData[i] = buttonData[i]
+
                     oldLedColour = ledColour
 
-        root.after(10, updateGUI)
+        root.after(1, updateGUI)
 
 def ledCharToCol(ledChar):
 
@@ -226,13 +242,13 @@ if __name__ == "__main__":
     accelAxes = graphs.add_subplot(211)
     #accelAxes.get_xaxis().set_visible(False)
     accelAxes.set_xlim([0, maxPoints])
-    accelAxes.set_ylim([-30000, 30000])
+    accelAxes.set_ylim([-40000, 40000])
     accelLines = []
 
     gyroAxes = graphs.add_subplot(212)
     #gyroAxes.get_xaxis().set_visible(False)
     gyroAxes.set_xlim([0, maxPoints])
-    gyroAxes.set_ylim([-10000, 10000])
+    gyroAxes.set_ylim([-40000, 40000])
     gyroLines = []
 
     x = np.arange(0, maxPoints, 1)
