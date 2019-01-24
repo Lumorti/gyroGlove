@@ -119,9 +119,9 @@ class GyroGlove {
         int baudRate = 9600;
         int timeoutIterations = 10;
         bool ledConnected = true;
-        int fingerThreshold = 10000;
-        int rotThreshold = 10000;
-        int accThreshold = 3000;
+        int fingerThreshold = 30000;
+        int rotThreshold = 30000;
+        int accThreshold = 30000;
         float accScalingFactor = 1.0;
         float rotScalingFactor = 1.0;
 
@@ -129,7 +129,7 @@ class GyroGlove {
         static const int chipAddress = 0x57;
         static const int gyroAddress = 0x69;
         static const int maxGestures = 10;
-        static const int timeBetween = 100;
+        static const int timeBetween = 10;
 
         // Keep track of the LED colour char
         char ledCol = 'l';
@@ -143,6 +143,7 @@ class GyroGlove {
         bool fingersClosedOld[5] = {false, false, false, false, false};
         bool fingersClosedTemp[5] = {false, false, false, false, false};
         int16_t fingerAccRaw[5] = {0, 0, 0, 0, 0};
+        byte fingerAccByte[5] = {0x45, 0x43, 0x43, 0x43, 0x43};
 
         // Raw values
         int16_t accRaw[3] = {0, 0, 0};

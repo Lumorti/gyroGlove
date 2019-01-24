@@ -77,15 +77,16 @@ void GyroGlove::update() {
 
         // Just ask for the y axis rotation
         Wire.beginTransmission(gyroAddress);
-        Wire.write(0x45);
+        Wire.write(fingerAccByte[i]);
         Wire.endTransmission(false);
         Wire.requestFrom(gyroAddress, 2, true);
 
         // Get the pair of bytes, then combine them
         fingerAccRaw[i] = Wire.read() << 8 | Wire.read();
-        Serial.println(fingerAccRaw[i]);
 
     }
+
+    //Serial.println(fingerAccRaw[1]);
 
     // Scale the values
     acc[0] = int(float(accRaw[0]) * accScalingFactor);
@@ -98,16 +99,16 @@ void GyroGlove::update() {
     oldGestureIndex = nextGestureIndex;
 
     // See if any gestures were performed
-    if (fingerAccRaw[0] > rotThreshold && !fingersClosed[0]) {addGest(Gestures::THUMBCLOSE); fingersClosed[0] = true;}
-    else if (fingerAccRaw[0] < -rotThreshold && fingersClosed[0]) {addGest(Gestures::THUMBOPEN); fingersClosed[0] = false;}
-    if (fingerAccRaw[1] > rotThreshold && !fingersClosed[1]) {addGest(Gestures::INDEXCLOSE); fingersClosed[1] = true;}
-    else if (fingerAccRaw[1] < -rotThreshold && fingersClosed[1]) {addGest(Gestures::INDEXOPEN); fingersClosed[1] = false;}
-    if (fingerAccRaw[2] > rotThreshold && !fingersClosed[2]) {addGest(Gestures::MIDDLECLOSE); fingersClosed[2] = true;}
-    else if (fingerAccRaw[2] < -rotThreshold && fingersClosed[2]) {addGest(Gestures::MIDDLEOPEN); fingersClosed[2] = false;}
-    if (fingerAccRaw[3] > rotThreshold && !fingersClosed[3]) {addGest(Gestures::RINGCLOSE); fingersClosed[3] = true;}
-    else if (fingerAccRaw[3] < -rotThreshold && fingersClosed[3]) {addGest(Gestures::RINGOPEN); fingersClosed[3] = false;}
-    if (fingerAccRaw[4] > rotThreshold && !fingersClosed[4]) {addGest(Gestures::LITTLECLOSE); fingersClosed[4] = true;}
-    else if (fingerAccRaw[4] < -rotThreshold && fingersClosed[4]) {addGest(Gestures::LITTLEOPEN); fingersClosed[4] = false;}
+    if (fingerAccRaw[0] > fingerThreshold && !fingersClosed[0]) {addGest(Gestures::THUMBCLOSE); fingersClosed[0] = true;}
+    else if (fingerAccRaw[0] < -fingerThreshold && fingersClosed[0]) {addGest(Gestures::THUMBOPEN); fingersClosed[0] = false;}
+    if (fingerAccRaw[1] > fingerThreshold && !fingersClosed[1]) {addGest(Gestures::INDEXCLOSE); fingersClosed[1] = true;}
+    else if (fingerAccRaw[1] < -fingerThreshold && fingersClosed[1]) {addGest(Gestures::INDEXOPEN); fingersClosed[1] = false;}
+    if (fingerAccRaw[2] > fingerThreshold && !fingersClosed[2]) {addGest(Gestures::MIDDLECLOSE); fingersClosed[2] = true;}
+    else if (fingerAccRaw[2] < -fingerThreshold && fingersClosed[2]) {addGest(Gestures::MIDDLEOPEN); fingersClosed[2] = false;}
+    if (fingerAccRaw[3] > fingerThreshold && !fingersClosed[3]) {addGest(Gestures::RINGCLOSE); fingersClosed[3] = true;}
+    else if (fingerAccRaw[3] < -fingerThreshold && fingersClosed[3]) {addGest(Gestures::RINGOPEN); fingersClosed[3] = false;}
+    if (fingerAccRaw[4] > fingerThreshold && !fingersClosed[4]) {addGest(Gestures::LITTLECLOSE); fingersClosed[4] = true;}
+    else if (fingerAccRaw[4] < -fingerThreshold && fingersClosed[4]) {addGest(Gestures::LITTLEOPEN); fingersClosed[4] = false;}
 
     // Did the gesture list change? If so, don't increase the counter
     if (nextGestureIndex == oldGestureIndex) {sinceLastGesture += 1;}
