@@ -43,28 +43,28 @@ void loop() {
 
 - 6 MPU6050 accelerometer/gyroscope modules
 - Arduino Pro Mini (or equivalent)
-- 2 pairs of medium thickness gloves
-- some 24 AWG wire in whatever colours
-- male to male jumper cables
-- an RGB LED (optional)
-- 3 220 Ohm resistors (only needed if using an LED)
+- a medium thickness glove
+- some 24 AWG wire in whatever colours (preferable red/black/yellow/green/blue)
+- male to female jumper cables
+- an RGB LED
+- 3 100 Ohm resistors
 
-Although in order to actually use it you'll obviously need an Arduino (or similar)
+Although in order to actually run software to use it you'll need an Arduino (or equivalent)
 
 ### Assembling the Glove
 
-Assembling the gyroGlove requires soldering, if you can't solder I recommend learning since it's a really useful skill. Alternatively you could attempt to hold the wire connections together with tape, but that's gonna be real flimsy and I don't recommend it
+Assembling the gyroGlove requires soldering, if you can't solder I recommend learning since it's a really useful skill.
 
 ![Wiring guide](https://github.com/Lumorti/gyroGlove/raw/master/images/circuits.png "Wiring guide")
 
 ### Connecting to an Arduino
 
-To connect the data glove to an Arduino plug the wires into their respective headers:
+To connect the gyroGlove to an Arduino plug the wires into their respective headers:
 
-- The power wire -> 5V
-- The ground wire -> GND
-- The SDA wire -> SDA
-- The SDL wire -> SDL
+- The power wire (red)    -> 5V
+- The ground wire (black) -> GND
+- The SDA wire (yellow)   -> SDA
+- The SDL wire (green)    -> SDL
 
 ### Using gyroglovelib
 
@@ -75,14 +75,14 @@ Main function list:
 ```c++
 // Was a certain finger gesture just completed?
 bool didWave = glove.did(Gestures::wave)
-bool didTapIndex = glove.did({Gestures::indexClose, Gestures::indexOpen})
+bool didTapIndex = glove.did(2, {Gestures::indexClose, Gestures::indexOpen})
 
 // Get the acceleration/rotation values (array: {x, y, z}), scaled from 1 -> 10
 int[] acc = glove.getAccel();
 int[] rot = glove.getRot();
 
-// Change the LED colour (RGB values from 0 -> 255)
-glove.setLED(0, 0, 255)
+// Change the LED colour (chars representing the colours)
+glove.setLED('r');
 
 // Get whether a finger is open (thumb/index/middle/ring/little)
 bool isIndexOpen = glove.getIndexOpen()
