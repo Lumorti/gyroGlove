@@ -24,9 +24,6 @@ void setup() {
     glove.init();
     glove.setOutput(true);
 
-    // Set the light to magenta initially
-    glove.setLED('m');
-
 }
 
 void loop() {
@@ -34,9 +31,9 @@ void loop() {
     // Get all the data from the glove
     glove.update();
 
-    // If the thumb is open, make it green, otherwise blue
-    if(glove.getThumbOpen() == true){glove.setLED('g');}
-    else{glove.setLED('b');}
+    // If the thumb is open, make it blue, otherwise green
+    if(glove.getThumbOpen() == true){glove.setLED('b');}
+    else{glove.setLED('g');}
 
 }
 
