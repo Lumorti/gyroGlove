@@ -10,7 +10,7 @@ Features:
 - the parts only cost around £20 total
 - easy to use Arduino library
 
-[GIF of the glove]
+![GIF of the glove](https://github.com/Lumorti/gyroGlove/raw/master/images/example.gif "GIF of the glove")
 
 Arduino code used above:
 
@@ -22,6 +22,10 @@ void setup() {
 
     // Initialise the glove
     glove.init();
+    glove.setOutput(true);
+
+    // Set the light to magenta initially
+    glove.setLED('m');
 
 }
 
@@ -30,13 +34,12 @@ void loop() {
     // Get all the data from the glove
     glove.update();
 
-    // If the user is waving, set the LED to green
-    if (glove.did(Gestures::WAVE)) {glove.setLED("g");}
-
-    // If the user has only their middle and ring fingers closed, set to red
-    else if (glove.did(Gestures::ROCKANDROLL)) {glove.setLED("r");}
+    // If the thumb is open, make it green, otherwise blue
+    if(glove.getThumbOpen() == true){glove.setLED('g');}
+    else{glove.setLED('b');}
 
 }
+
 ```
 
 ### Parts Required
@@ -49,11 +52,9 @@ void loop() {
 - an RGB LED
 - 3 100 Ohm resistors
 
-Although in order to actually run software to use it you'll need an Arduino (or equivalent)
+Although in order to actually run software to use it you'll need an Arduino (or equivalent).
 
 ### Assembling the Glove
-
-Assembling the gyroGlove requires soldering, if you can't solder I recommend learning since it's a really useful skill.
 
 ![Wiring guide](https://github.com/Lumorti/gyroGlove/raw/master/images/circuits.png "Wiring guide")
 
@@ -68,12 +69,12 @@ To connect the gyroGlove to an Arduino plug the wires into their respective head
 
 ### Using gyroglovelib
 
-gyroglovelib is the Arduino library used to control the gyro glove
+"gyroglovelib" is the Arduino library used to control the gyro glove.
 
 Main function list:
 
 ```c++
-// Was a certain finger gesture just completed?
+// Was a certain finger gesture just completed? TODO
 bool didWave = glove.did(Gestures::wave)
 bool didTapIndex = glove.did(2, {Gestures::indexClose, Gestures::indexOpen})
 
@@ -105,11 +106,9 @@ glove.setRate(9600);
 glove.setTimeout(10);
 ```
 
-### Supported Gestures
-
 ### Debugging Using ggmonitor
 
-ggmonitor is a cross-platform Python GUI tool allowing the calibration and testing of a gyro glove
+"ggmonitor" is a cross-platform Python GUI tool allowing the calibration and testing of a gyro glove.
 
 There are some dependencies, however most should already be installed if python is:
 
@@ -130,20 +129,22 @@ sudo apt install python3 python3-matplotlib python3-numpy python3-serial python3
 On Windows these can be installed with pip after installing python3:
 
 ```sh
-pip3 install --upgrade matplotlib numpy serial tkinter pil
+pip3 install matplotlib numpy serial tkinter pil
 ```
 
 Ensure that the following lines are in their respective sections in the code of the Arduino:
 
 ```c++
-#include <gyroglovelib.h>
+#include <GyroGlove.h>
 GyroGlove glove;
 
 void setup() {
 
     // Initialise the glove
     glove.init();
-    glove.setOutput(true)
+
+    // Tell it to output the data to serial for ggmonitor
+    glove.setOutput(true);
 
 }
 
@@ -155,6 +156,4 @@ void loop() {
 }
 ```
 
-Run the ggmonitor executable ("ggmonitor.py") on your computer, which will create a ggmonitor window
-
-Then connect the Arduino via a USB cable and ggmonitor should detect it and start displaying data
+Run the ggmonitor executable ("ggmonitor.py") on your computer, which will create a ggmonitor window, then connect the Arduino via a USB cable and ggmonitor should detect it and start displaying data. If it doesn't detect it, try plugging it in before starting the program instead.

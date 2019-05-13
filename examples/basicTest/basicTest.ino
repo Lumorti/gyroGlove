@@ -5,6 +5,10 @@ void setup() {
 
     // Initialise the glove
     glove.init();
+    glove.setOutput(true);
+
+    // Set the light to magenta initially
+    glove.setLED('m');
 
 }
 
@@ -13,10 +17,8 @@ void loop() {
     // Get all the data from the glove
     glove.update();
 
-    // If the user is waving, set the LED to green
-    if (glove.did(Gestures::WAVE)) {glove.setLED("g");}
-
-    // If the user has only their middle and ring fingers closed, set to red
-    else if (glove.did(Gestures::ROCKANDROLL)) {glove.setLED("r");}
+    // If the thumb is open, make it green, otherwise blue
+    if(glove.getThumbOpen() == true){glove.setLED('g');}
+    else{glove.setLED('b');}
 
 }

@@ -65,28 +65,36 @@ void GyroGlove::update() {
     rotRaw[1] = Wire.read() << 8 | Wire.read();
     rotRaw[2] = Wire.read() << 8 | Wire.read();
 
-    // Go through all the different finger gyroscopes and get just the Z values
-    for (int i = 0; i < 5; i++) {
+    // Only check for finger movements if the hand isn't doing anything crazy
+    if (rotRaw[0] < rotThreshold && rotRaw[1] < rotThreshold && rotRaw[2] < rotThreshold){
 
-        // Tell the helper chip to enable the gyro for that finger
-        Wire.beginTransmission(chipAddress);
-        Wire.write(i+2);
-        Wire.endTransmission(true);
+        // Go through all the different finger gyroscopes and get just the Z values
+        for (int i = 0; i < 5; i++) {
 
-        delay(timeBetween);
+            // Tell the helper chip to enable the gyro for that finger
+            Wire.beginTransmission(chipAddress);
+            Wire.write(i+2);
+            Wire.endTransmission(true);
 
-        // Just ask for the y axis rotation
-        Wire.beginTransmission(gyroAddress);
-        Wire.write(fingerAccByte[i]);
-        Wire.endTransmission(false);
-        Wire.requestFrom(gyroAddress, 2, true);
+            delay(timeBetween);
 
-        // Get the pair of bytes, then combine them
-        fingerAccRaw[i] = Wire.read() << 8 | Wire.read();
+            // Just ask for the y axis rotation
+            Wire.beginTransmission(gyroAddress);
+            Wire.write(fingerAccByte[i]);
+            Wire.endTransmission(false);
+            Wire.requestFrom(gyroAddress, 2, true);
+
+            // Get the pair of bytes, then combine them
+            fingerAccRaw[i] = Wire.read() << 8 | Wire.read();
+
+        }
+
+    } else {
+
+        // Otherwise set them all to 1 to prevent them triggering anything
+        for (int i = 0; i < 5; i++) {fingerAccRaw[i] = 1;}
 
     }
-
-    //Serial.println(fingerAccRaw[1]);
 
     // Scale the values
     acc[0] = int(float(accRaw[0]) * accScalingFactor);
@@ -219,8 +227,8 @@ void GyroGlove::setOutput(bool output) {
 
 // Getters for the finger values
 bool * GyroGlove::getFingerState()  { return fingersClosed; }
-bool GyroGlove::getIndexOpen()      { return fingersClosed[0]; }
-bool GyroGlove::getThumbOpen()      { return fingersClosed[1]; }
+bool GyroGlove::getThumbOpen()      { return fingersClosed[0]; }
+bool GyroGlove::getIndexOpen()      { return fingersClosed[1]; }
 bool GyroGlove::getMiddleOpen()     { return fingersClosed[2]; }
 bool GyroGlove::getRingOpen()       { return fingersClosed[3]; }
 bool GyroGlove::getLittleOpen()     { return fingersClosed[4]; }
