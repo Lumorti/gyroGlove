@@ -32,8 +32,8 @@ void loop() {
     glove.update();
 
     // If the thumb is open, make it blue, otherwise green
-    if(glove.getThumbOpen() == true){glove.setLED('b');}
-    else{glove.setLED('g');}
+    if (glove.getThumbOpen()){glove.setLED('b');}
+    else {glove.setLED('g');}
 
 }
 
@@ -49,7 +49,7 @@ void loop() {
 - an RGB LED
 - 3 100 Ohm resistors
 
-Although in order to actually run software to use it you'll need an Arduino (or equivalent).
+You'll also need another Arduino to process the data output by the Arduino Pro Mini (which is located on the back of the glove for faster processing and wiring simplifcation). This is as simple as just plugging the correct four wires from the gyroGlove into an Arduino and then using the gyroGlove library.
 
 ### Assembling the Glove
 
@@ -107,7 +107,7 @@ glove.setTimeout(10);
 
 "ggmonitor" is a cross-platform Python GUI tool allowing the calibration and testing of a gyro glove.
 
-There are some dependencies, however most should already be installed if python is:
+There are some dependencies, however most should already be installed if Python is:
 
 - python3
 - pyserial
@@ -116,7 +116,7 @@ There are some dependencies, however most should already be installed if python 
 - numpy
 - matplotlib
 
-On Ubuntu/Debian these can be installed with apt:
+On Ubuntu/Debian these can be installed with apt as follows:
 
 ```sh
 sudo apt update
@@ -129,7 +129,7 @@ On Windows these can be installed with pip after installing python3:
 pip3 install matplotlib numpy serial tkinter pil
 ```
 
-Ensure that the following lines are in their respective sections in the code of the Arduino:
+An example code snippet which will allow debugging using ggmonitor:
 
 ```c++
 #include <GyroGlove.h>
@@ -153,4 +153,4 @@ void loop() {
 }
 ```
 
-Run the ggmonitor executable ("ggmonitor.py") on your computer, which will create a ggmonitor window, then connect the Arduino via a USB cable and ggmonitor should detect it and start displaying data. If it doesn't detect it, try plugging it in before starting the program instead.
+Run the ggmonitor executable ("./ggmonitor.py") on your computer, which will create a ggmonitor window, then connect the Arduino via a USB cable and ggmonitor should detect it and start displaying data. If it doesn't detect it, try plugging it in before starting the program instead.
